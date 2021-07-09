@@ -1,0 +1,221 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>CRUD AJAX APP</title>
+</head>
+<body>
+    <div class="text-center alert alert-danger mt-5 container"> <h1> AJAX DJANGO CRUD APPLICATION</h1></div>
+
+
+    <div class="row">
+        <div class= "col-lg-5">
+        <header class="header container ml-3">
+            
+            <h5 class="text-center alert alert-info"> User Data </h5>  
+        </header>
+
+        <div class=' row input-group  ms-1 smt-1'>
+           <form action = ''  method="POST" id='form_id'>
+               {% csrf_token %}
+                {{form.as_p}}
+                <button  type ="submit" class="btn btn-primary "> Submit </button>
+            </form> 
+        </div>     
+
+
+        </div>
+
+       <div class="col-lg-7 container" >
+            <table id = "id_div">
+             <tr class="alert alert-info ">
+                <th class="col-lg-3"> <h4> ID </h4> </th>
+                <th class="col-lg-3"> <h4> Name </h4></th>
+                <th  class="col-lg-3"> <h4> Email </h4> </th>
+                <th class="col-lg-3"> <h4> Password </h4> </th>
+                <th  class="col-lg-3 text-center"> <h4> Action </h4> </th>
+            </tr>
+
+            
+            </table> 
+        </div>
+    </div>
+
+    <script>
+        //  const xhr = new XMLHttpRequest()
+        //  const method = "POST"
+        //  const url = 'http://127.0.0.1:8000/delete/'
+        //  xhr.open(method ,url ,true)
+        // xhr.setRequestHeader('json', 'x-www-form-urlencoded');
+        // var dict
+        // delete_id = document.getElementById('delete_id')
+        // function del(){
+        //     var i_id = event.target.parentNode.parentNode.id
+        //     console.log(i_id)
+        //     dict = [{id:i_id}]
+        //     console.log(dict)
+        //     json_dict = JSON.stringify(dict)
+        //     xhr.send(json_dict)
+        // }
+        const subit_id = document.getElementById("submit")
+        const form_id = document.getElementById('form_id')
+        const data_html = document.getElementById("id_div")
+        const delete_id = document.getElementById("delete_id")
+        const update_id = document.getElementById("update_id")
+        
+
+        const form_nameid= document.getElementById("nameid")
+        const form_emailid= document.getElementById("emailid")
+        const form_passworid= document.getElementById("passwordid")
+        
+        
+        
+
+        function delete_function(){
+            var del_id = event.target.parentNode.parentNode.firstChild.innerHTML
+            var del_El = event.target.parentNode.parentNode
+            console.log(typeof(del_id))
+            const xhr = new XMLHttpRequest()
+            const method="POST"
+            const url = '/delete/'
+
+            d = {"id":[del_id] }
+
+            const responseType = "json"
+            xhr.responseType = responseType
+
+            xhr.open(method,url,true)
+
+            xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "XMLHttpRequest")
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+
+            xhr.onload = function() {
+                const serverResponse =  xhr.response
+                console.log(serverResponse)
+                del_El.remove()
+            }
+            console.log(d , "Data xhr") 
+            xhr.send(del_id)
+            
+        }
+
+        let up_id = null
+      
+        function update_function(){
+            up_id = event.target.parentNode.parentNode.firstChild.innerHTML
+            form_nameid.value = event.target.parentNode.parentNode.childNodes[1].innerHTML
+            form_emailid.value = event.target.parentNode.parentNode.childNodes[2].innerHTML
+            form_passworid.value = event.target.parentNode.parentNode.childNodes[3].innerHTML
+            console.log(up_id)
+        }
+        function FormSubmitFunction(event , sid){
+            console.log(sid , 'in submit')
+            console.log(event)
+            event.preventDefault()
+            console.log("Event")
+            var FormElement = event.target
+            
+            const MyformData = new FormData(FormElement)
+            
+            
+  
+            const url = FormElement.getAttribute("action")
+            const method = "POST"
+    
+            const xhr = new XMLHttpRequest()
+            const responseType = "json"
+            xhr.responseType = responseType
+            token = 'oNeCDRrBCSBI91xrIfiijFyxh2PRfCASFbBGPiUgPXdwGw85sNYvEYXT4E7ibL4Q'
+            xhr.open(method,url , true)
+            xhr.setRequestHeader('Csrf-Token', token);
+
+            xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "XMLHttpRequest")
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+
+            if(sid!=null){
+               
+                myformdata_sid = {"id" : sid , "name" : form_nameid.value ,"email" : form_emailid.value , "password" : form_passworid.value }
+                
+                myformdata_sid_string = JSON.stringify(myformdata_sid)
+                console.log(myformdata_sid_json)
+                xhr.onload()=function(){
+                    const serverResponse =  xhr.response
+                    console.log(serverResponse)
+                }
+                
+                xhr.send(myformdata_sid_string)
+            }
+
+            else{
+               console.log("in else sid")
+               xhr.onload = function(){
+               
+               const serverResponse =  xhr.response
+               console.log(serverResponse)
+               const new_data = formattedData(serverResponse)
+               console.log(new_data.id)
+               data_html.innerHTML += new_data
+               
+            }
+            xhr.send(MyformData)
+        }
+        }
+       
+        form_id.addEventListener('submit' , function(event){
+            console.log(up_id ,'evenlistner')
+            FormSubmitFunction(event ,up_id )
+        })
+
+
+        function formattedData(data){
+                var Formatted_data = "<tr>" +"<td class='col-lg-3'>"+  data.id  +"</td>"+
+                                        "<td  class='col-lg-3'>"+ data.name  +"</td>"+
+                                        "<td  class='col-lg-3'>"+ data.email +"</td>"+
+                                        "<td  class='col-lg-3'>"+  data.password  +"</td>"+
+                                        "<td class='row' >"+"<button id='delete_id' onclick='delete_function()' class='btn btn-danger'>"+"Delete"+"</button>"+
+                                             "<button id='update_id' onclick='update_function()' class='btn btn-warning'>"+"Update"+"</button>"+"</td>"
+                                    "</tr>"
+                    return Formatted_data
+                                    }
+
+
+
+        
+
+        function loadData(){
+            const xhr = new XMLHttpRequest()
+            const method="GET"
+            const url = '/data'
+            const responseType = "json"
+
+            xhr.open(method,url)
+
+            xhr.onload = function(){
+               const serverResponse =  xhr.response
+               listed_items = JSON.parse(serverResponse)
+               
+                var i;
+                var final_str = ""
+                for(i=0;i<listed_items.length;i++){
+                    var data = listed_items[i]
+                    var current_str= formattedData(data)
+                    final_str  += current_str
+                }           
+
+                
+                data_html.innerHTML += final_str
+            }
+            xhr.send()
+        }
+        
+        loadData()
+        
+        
+    </script>
+</body> 
+</html>
